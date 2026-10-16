@@ -6,21 +6,19 @@
 
 ## Overview
 
-[Amadeus for Developers](https://developers.amadeus.com/) offers self-service travel APIs for searching, pricing and booking flights, hotels and related travel services. The Flight Create Orders API creates a flight order, which books the priced flight offers for the travelers, contacts and payment details supplied in the request.
+[Amadeus](https://developers.amadeus.com/) offers travel APIs for searching, pricing and booking flights, hotels and related travel services. The Flight Create Orders API creates a flight order, which books the priced flight offers for the travelers and contacts supplied in the request. Forms of payment can be supplied only where the Amadeus account supports them; the former Self-Service offering did not accept them.
 
 The Amadeus Flight Create Orders connector lets Ballerina applications book flights through the Amadeus booking engine. It supports version 1.10.0 of the Flight Create Orders API.
 
 ## Setup guide
 
-To use the Amadeus Flight Create Orders connector, you need an Amadeus for Developers account and an application with an API key and API secret.
+To use the Amadeus Flight Create Orders connector, you need an API key and API secret for Amadeus Enterprise APIs.
 
-1. Sign up or log in at the [Amadeus for Developers portal](https://developers.amadeus.com/register).
+> **Note:** The Amadeus Self-Service portal was decommissioned on 17 July 2026. New registrations and app creation there stopped, and Self-Service API keys were disabled, so credentials can no longer be created through the Self-Service workspace.
 
-2. Open **My Self-Service Workspace** and click **Create new app**.
+1. Contact your Amadeus account manager to get access to the Flight Create Orders API through Amadeus Enterprise.
 
-3. Give the app a name and click **Create**. The app is created for the test environment. The connector targets production by default, so request **Move to Production** from the app's page before booking real orders.
-
-4. Copy the **API Key** and **API Secret** from the app's details. They are the client ID and client secret used to obtain access tokens from `https://api.amadeus.com/v1/security/oauth2/token` (`https://test.api.amadeus.com/v1/security/oauth2/token` for a test app).
+2. Obtain the **API Key** and **API Secret** issued for your application. They are the client ID and client secret used to obtain access tokens from `https://api.amadeus.com/v1/security/oauth2/token` (`https://test.api.amadeus.com/v1/security/oauth2/token` for the test environment).
 
 ## Quickstart
 
@@ -28,9 +26,10 @@ To use the Amadeus Flight Create Orders connector in your Ballerina application,
 
 ### Step 1: Import the module
 
-Import the `amadeus.flightcreateorders` module.
+Import the `amadeus.flightcreateorders` module, and `ballerina/io` to read the priced flight offer.
 
 ```ballerina
+import ballerina/io;
 import ballerinax/amadeus.flightcreateorders as amadeus;
 ```
 
@@ -64,20 +63,32 @@ Now, utilize the available connector operations.
 
 #### Create a flight order
 
+Book a flight offer priced with the Flight Offers Price API, passing the priced offer unchanged. `flight_offers_price.json` holds that API's response.
+
 ```ballerina
 public function main() returns error? {
-    amadeus:Success_Booking _ = check amadeusClient->createFlightOrder({
+    json pricingResponse = check io:fileReadJson("flight_offers_price.json");
+    json pricedOffers = check pricingResponse.data.flightOffers;
+    amadeus:FlightOffer[] flightOffers = check pricedOffers.cloneWithType();
+
+    amadeus:Success_Booking booking = check amadeusClient->createFlightOrder({
         data: {
             'type: "flight-order",
-            flightOffers: [
+            flightOffers,
+            travelers: [
                 {
-                    'type: "flight-offer",
                     id: "1",
-                    'source: "GDS"
+                    dateOfBirth: "1982-01-16",
+                    name: {firstName: "JORGE", lastName: "GONZALES"},
+                    contact: {
+                        emailAddress: "jorge.gonzales833@telefonica.es",
+                        phones: [{deviceType: "MOBILE", countryCallingCode: "34", number: "480080076"}]
+                    }
                 }
             ]
         }
     });
+    io:println("Flight order created: ", booking.data.id ?: "unassigned");
 }
 ```
 

@@ -8,15 +8,15 @@ The `ballerinax/amadeus.flightcreateorders` connector provides practical example
 
 ## Prerequisites
 
-1. Create an application in the [Amadeus for Developers portal](https://developers.amadeus.com/) to obtain an API key and API secret.
+1. Obtain an API key and API secret for Amadeus Enterprise APIs through your Amadeus account manager. The Amadeus Self-Service portal was decommissioned on 17 July 2026, so applications and credentials can no longer be created there.
 
 2. For each example, create a `Config.toml` file with the related configuration. Here's an example of how your Config.toml file should look:
 
 ```toml
 clientId = "<api-key>"
 clientSecret = "<api-secret>"
-tokenUrl = "https://test.api.amadeus.com/v1/security/oauth2/token"
-serviceUrl = "https://test.api.amadeus.com/v1/booking"
+tokenUrl = "https://api.amadeus.com/v1/security/oauth2/token"
+serviceUrl = "https://api.amadeus.com/v1/booking"
 ```
 
 Each example lists the additional values it needs in its own README.

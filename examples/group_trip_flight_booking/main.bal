@@ -7,13 +7,7 @@ configurable string clientId = ?;
 configurable string clientSecret = ?;
 configurable string tokenUrl = ?;
 configurable string serviceUrl = ?;
-configurable string flightOfferId = ?;
-configurable string originCode = ?;
-configurable string destinationCode = ?;
-configurable string carrierCode = ?;
-configurable string flightNumber = ?;
-configurable string departureTime = ?;
-configurable string arrivalTime = ?;
+configurable string pricingResponsePath = "flight_offers_price.json";
 configurable string groupContactEmail = ?;
 configurable Passengers passengers = ?;
 
@@ -25,14 +19,26 @@ type Passenger record {|
     string dateOfBirth;
 |};
 
+// A flight order holds at most 18 travelers.
+const MAX_TRAVELERS = 18;
+
 public function main() returns error? {
     if passengers.length() == 0 {
         return error("At least one passenger must be configured");
+    }
+    if passengers.length() > MAX_TRAVELERS {
+        return error(string `A flight order holds at most ${MAX_TRAVELERS} travelers, but ${passengers.length()} are configured`);
     }
     amadeus:Client amadeusClient = check new ({
         auth: {tokenUrl, clientId, clientSecret}
     }, serviceUrl);
 
+    // The priced offer, as returned by the Flight Offers Price API, is booked unchanged.
+    json pricingResponse = check io:fileReadJson(pricingResponsePath);
+    json pricedOffers = check pricingResponse.data.flightOffers;
+    amadeus:FlightOffer[] flightOffers = check pricedOffers.cloneWithType();
+
+    // Traveler ids 1..n match the travelerId values the offer was priced for.
     amadeus:Traveler[] travelers = [];
     foreach int index in 0 ..< passengers.length() {
         Passenger passenger = passengers[index];
@@ -46,25 +52,7 @@ public function main() returns error? {
     amadeus:FlightOrderQuery payload = {
         data: {
             'type: "flight-order",
-            flightOffers: [
-                {
-                    'type: "flight-offer",
-                    id: flightOfferId,
-                    'source: "GDS",
-                    itineraries: [
-                        {
-                            segments: [
-                                {
-                                    departure: {iataCode: originCode, at: departureTime},
-                                    arrival: {iataCode: destinationCode, at: arrivalTime},
-                                    carrierCode,
-                                    number: flightNumber
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
+            flightOffers,
             travelers,
             contacts: [
                 {

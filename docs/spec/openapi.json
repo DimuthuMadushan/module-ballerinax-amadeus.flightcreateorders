@@ -1773,7 +1773,7 @@
         "addresseeName": {
           "type": "string",
           "description": "Adressee name (e.g. in case of emergency purpose it corresponds to name of the person to be contacted).",
-          "pattern": "[a-zA-Z -]"
+          "pattern": "[a-zA-Z -]+"
         },
         "countryCode": {
           "type": "string",
@@ -2056,7 +2056,7 @@
         "countryCallingCode": {
           "type": "string",
           "description": "Country calling code of the phone number, as defined by the International Communication Union. Examples - \"1\" for US, \"371\" for Latvia.",
-          "pattern": "[0-9+]{2,5}"
+          "pattern": "[0-9+]{1,5}"
         },
         "number": {
           "type": "string",

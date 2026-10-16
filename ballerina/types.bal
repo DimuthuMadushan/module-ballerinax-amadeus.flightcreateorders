@@ -581,7 +581,7 @@ public type EmergencyContact record {
     @constraint:String {pattern: re `[A-Z]{2}`}
     string countryCode?;
     # Adressee name (e.g. in case of emergency purpose it corresponds to name of the person to be contacted)
-    @constraint:String {pattern: re `[a-zA-Z -]`}
+    @constraint:String {pattern: re `[a-zA-Z -]+`}
     string addresseeName?;
     # additional details
     string text?;
@@ -745,7 +745,7 @@ public type Phone record {
     @constraint:String {pattern: re `[0-9]{1,15}`}
     string number?;
     # Country calling code of the phone number, as defined by the International Communication Union. Examples - "1" for US, "371" for Latvia
-    @constraint:String {pattern: re `[0-9+]{2,5}`}
+    @constraint:String {pattern: re `[0-9+]{1,5}`}
     string countryCallingCode?;
 };
 

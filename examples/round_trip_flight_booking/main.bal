@@ -7,17 +7,7 @@ configurable string clientId = ?;
 configurable string clientSecret = ?;
 configurable string tokenUrl = ?;
 configurable string serviceUrl = ?;
-configurable string flightOfferId = ?;
-configurable string originCode = ?;
-configurable string destinationCode = ?;
-configurable string outboundCarrier = ?;
-configurable string outboundFlightNumber = ?;
-configurable string outboundDeparture = ?;
-configurable string outboundArrival = ?;
-configurable string returnCarrier = ?;
-configurable string returnFlightNumber = ?;
-configurable string returnDeparture = ?;
-configurable string returnArrival = ?;
+configurable string pricingResponsePath = "flight_offers_price.json";
 configurable string travelerFirstName = ?;
 configurable string travelerLastName = ?;
 configurable string travelerDateOfBirth = ?;
@@ -30,38 +20,15 @@ public function main() returns error? {
         auth: {tokenUrl, clientId, clientSecret}
     }, serviceUrl);
 
+    // The priced round-trip offer, as returned by the Flight Offers Price API, is booked unchanged.
+    json pricingResponse = check io:fileReadJson(pricingResponsePath);
+    json pricedOffers = check pricingResponse.data.flightOffers;
+    amadeus:FlightOffer[] flightOffers = check pricedOffers.cloneWithType();
+
     amadeus:FlightOrderQuery payload = {
         data: {
             'type: "flight-order",
-            flightOffers: [
-                {
-                    'type: "flight-offer",
-                    id: flightOfferId,
-                    'source: "GDS",
-                    itineraries: [
-                        {
-                            segments: [
-                                {
-                                    departure: {iataCode: originCode, at: outboundDeparture},
-                                    arrival: {iataCode: destinationCode, at: outboundArrival},
-                                    carrierCode: outboundCarrier,
-                                    number: outboundFlightNumber
-                                }
-                            ]
-                        },
-                        {
-                            segments: [
-                                {
-                                    departure: {iataCode: destinationCode, at: returnDeparture},
-                                    arrival: {iataCode: originCode, at: returnArrival},
-                                    carrierCode: returnCarrier,
-                                    number: returnFlightNumber
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
+            flightOffers,
             travelers: [
                 {
                     id: "1",
@@ -82,7 +49,8 @@ public function main() returns error? {
     io:println("Flight order created with id: ", booking.data.id ?: "unassigned");
     amadeus:AssociatedRecord[]? records = booking.data.associatedRecords;
     if records is () || records.length() == 0 {
-        return error("The order was created but no booking reference was returned");
+        io:println("No booking reference is available for this order yet");
+        return;
     }
     foreach amadeus:AssociatedRecord associatedRecord in records {
         io:println("Booking reference: ", associatedRecord.reference);

@@ -1,4 +1,4 @@
-_Author_:  Ballerina \
+_Author_:  @DimuthuMadushan \
 _Created_: 2026/10/16 \
 _Updated_: 2026/10/16 \
 _Edition_: Swan Lake
@@ -28,18 +28,23 @@ These changes are done in order to improve the overall usability, and as workaro
 
 4. Point the server at the production environment
 - **Original**: `host` `test.api.amadeus.com`, so the client's default service URL was the test environment `https://test.api.amadeus.com/v1/booking`.
-- **Updated**: `host` `api.amadeus.com`, giving the default service URL `https://api.amadeus.com/v1/booking`. The OAuth 2.0 token URL added in item 2 uses the matching production host, since a token issued by one environment is not accepted by the other. The same values are set in the aligned spec's `servers` and `securitySchemes`.
+- **Updated**: `host` `api.amadeus.com`, giving the default service URL `https://api.amadeus.com/v1/booking`. The OAuth 2.0 token URL added in item 2 uses the matching production host, since a token issued by one environment is not accepted by the other.
 - **Reason**: The connector's defaults should target the production API. The test environment stays available by passing its service URL and token URL explicitly.
 
 5. Rewrite the API description
 - **Original**: `info.description` covered only a pointer to the authorization guide and a note about test-environment data.
-- **Updated**: A short summary of what the API does (creates flight orders from priced flight offers), how it authenticates (OAuth 2.0 client credentials) and that it targets production by default. The same text is set in the aligned spec's `info.description`.
+- **Updated**: A short summary of what the API does (creates flight orders from priced flight offers), how it authenticates (OAuth 2.0 client credentials) and that it targets production by default.
 - **Reason**: `info.description` becomes the doc comment of the generated `Client`, so it should explain the client to a Ballerina user.
 
 6. Add missing field descriptions
 - **Original**: These properties had no `description`: `Tax.amount`, `Tax.code`, `Fee.amount`, `B2bWallet.reportingData`, the `additionalServices` array of the extended price, the `number` and `category` of `AutomatedProcessCommon.queue`, the inline `additionalServices` object (`AdditionalServicesRequest`) of the segment fare details, and the `AllotmentDetails` schema.
-- **Updated**: Added a short description to each. `AdditionalServicesRequest` and `AllotmentDetails` are referenced by `$ref` in the aligned spec, so the description sits on the schema itself, where the generator reads it for the referencing field. The same descriptions are set in the aligned spec.
+- **Updated**: Added a short description to each, in the original spec. `AllotmentDetails` is referenced by `$ref`, so its description sits on the schema itself, where the generator reads it for the referencing field.
 - **Reason**: Fields without a description generate undocumented record fields, which `bal build` reports as `undocumented field` warnings.
+
+7. Correct two string patterns
+- **Original**: `EmergencyContact.addresseeName` had the pattern `[a-zA-Z -]` and `Phone.countryCallingCode` had `[0-9+]{2,5}`.
+- **Updated**: `[a-zA-Z -]+` and `[0-9+]{1,5}`, in the original spec.
+- **Reason**: Ballerina constraints match the whole value, so `[a-zA-Z -]` accepted only a one-character name, and `{2,5}` rejected the documented calling code `1` for the US. The connector validates responses against these patterns by default, so valid values failed in both directions.
 
 ## OpenAPI cli command
 
