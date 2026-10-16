@@ -50,10 +50,23 @@
         "Initial version"
       ]
     },
-    "description": "Before using this API, we recommend you read our **[Authorization Guide](https://developers.amadeus.com/self-service/apis-docs/guides/authorization-262)** for more information on how to generate an access token. \n\nPlease also be aware that our test environment is based on a subset of the production, if you are not returning any results try with big cities/airports like LON (London) or NYC (New-York)."
+    "description": "Books flights by creating flight orders from flight offers priced with the Amadeus Flight Offers Price API. Authenticates with OAuth 2.0 client credentials and targets the production environment by default."
   },
-  "host": "test.api.amadeus.com",
+  "host": "api.amadeus.com",
   "basePath": "/v1",
+  "securityDefinitions": {
+    "oauth2": {
+      "type": "oauth2",
+      "flow": "application",
+      "tokenUrl": "https://api.amadeus.com/v1/security/oauth2/token",
+      "scopes": {}
+    }
+  },
+  "security": [
+    {
+      "oauth2": []
+    }
+  ],
   "schemes": [
     "https"
   ],
@@ -932,6 +945,7 @@
               "example": "EUR"
             },
             "additionalServices": {
+              "description": "Prices of the additional services, such as chargeable checked bags or seats",
               "type": "array",
               "title": "AdditionalServices",
               "items": {
@@ -959,6 +973,7 @@
       "description": "a fee",
       "properties": {
         "amount": {
+          "description": "Amount of the fee",
           "type": "string",
           "example": "332.70"
         },
@@ -982,10 +997,12 @@
       "type": "object",
       "properties": {
         "amount": {
+          "description": "Amount of the tax",
           "type": "string",
           "example": "332.70"
         },
         "code": {
+          "description": "Code of the tax",
           "type": "string",
           "example": "MX"
         }
@@ -1244,6 +1261,7 @@
                       "description": "Details of the included checked bags"
                     },
                     "additionalServices": {
+                      "description": "Additional services requested for the segment, such as chargeable checked bags or seats",
                       "type": "object",
                       "title": "AdditionalServicesRequest",
                       "properties": {
@@ -1395,6 +1413,7 @@
     },
     "AllotmentDetails": {
       "title": "AllotmentDetails",
+      "description": "Details of the allotment the booking class belongs to",
       "type": "object",
       "properties": {
         "tourName": {
@@ -2142,9 +2161,11 @@
           "description": "Identifies the queue onto which PNR must be automatically placed upon process execution.",
           "properties": {
             "number": {
+              "description": "Number of the queue",
               "type": "string"
             },
             "category": {
+              "description": "Category of the queue",
               "type": "string"
             }
           }
@@ -2376,6 +2397,7 @@
           "pattern": "[a-zA-Z0-9]{1,35}"
         },
         "reportingData": {
+          "description": "Reporting data attached to the card, as name and value pairs",
           "type": "array",
           "title": "reportingData",
           "items": {
